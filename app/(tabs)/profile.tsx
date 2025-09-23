@@ -1,13 +1,21 @@
+import { router } from "expo-router";
 import React from "react";
-import { View, Text, StyleSheet, SafeAreaView } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { FloatingChatButton } from "../../components/FloatingChatButton";
 
-export default function MyIssuesScreen() {
+export default function ProfileScreen() {
+  const handleChatPress = () => {
+    router.push("/chat");
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>My Issues</Text>
-        <Text style={styles.subtitle}>View all issues reported by you</Text>
+        <Text style={styles.title}>Profile Screen</Text>
+        <Text style={styles.subtitle}>User profile with basic details</Text>
       </View>
+      <FloatingChatButton onPress={handleChatPress} />
     </SafeAreaView>
   );
 }

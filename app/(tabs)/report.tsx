@@ -1,22 +1,23 @@
-import React, { useState, useRef } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  Image,
-  Platform,
-  Dimensions,
-  SafeAreaView,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import { Audio } from "expo-av";
 import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
+import { router } from "expo-router";
+import React, { useState } from "react";
+import {
+  Alert,
+  Dimensions,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { FloatingChatButton } from "../../components/FloatingChatButton";
 
 const { width } = Dimensions.get("window");
 
@@ -40,6 +41,10 @@ export default function ReportScreen() {
     "Education",
     "Others",
   ];
+
+  const handleChatPress = () => {
+    router.push("/chat");
+  };
 
   // Request permissions
   const requestPermissions = async () => {
@@ -437,6 +442,8 @@ export default function ReportScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <FloatingChatButton onPress={handleChatPress} />
     </SafeAreaView>
   );
 }

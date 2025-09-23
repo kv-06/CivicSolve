@@ -1,8 +1,15 @@
-// app/index.tsx (Home Screen)
+// app/(tabs)/index.tsx - Home Screen with Chat
+import { router } from "expo-router";
 import React from "react";
-import { View, Text, StyleSheet, SafeAreaView } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { FloatingChatButton } from "../../components/FloatingChatButton";
 
 export default function HomeScreen() {
+  const handleChatPress = () => {
+    router.push("/chat");
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -11,6 +18,7 @@ export default function HomeScreen() {
           Map with hotspots and completed issues will be shown here
         </Text>
       </View>
+      <FloatingChatButton onPress={handleChatPress} />
     </SafeAreaView>
   );
 }
@@ -38,9 +46,3 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
-
-// app/discover.tsx
-
-// app/my-issues.tsx
-
-// app/profile.tsx
