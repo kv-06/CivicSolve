@@ -1,50 +1,258 @@
-# Welcome to your Expo app 👋
+# CivicSolve - Civic Problem Reporting System 🏛️
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A comprehensive civic problem reporting and management system built with React Native (Expo) frontend and Node.js/Express/MongoDB backend. Citizens can report civic issues, track their progress, and engage with local authorities through a modern, user-friendly interface.
 
-## Get started
+## 🌟 Features
 
-1. Install dependencies
+### Frontend (React Native/Expo)
+- **📱 Cross-platform** - iOS, Android, and Web support
+- **🗺️ Interactive Maps** - Location-based issue reporting
+- **📸 Media Upload** - Photos, videos, audio, and documents
+- **🔍 Advanced Search** - Filter by category, status, priority
+- **📊 Dashboard** - Statistics and progress tracking
+- **💬 Real-time Chat** - Communication with authorities
+- **🌙 Modern UI** - Clean, responsive design
 
-   ```bash
-   npm install
-   ```
+### Backend (Node.js/Express/MongoDB)
+- **🔐 JWT Authentication** - Secure user management
+- **📡 RESTful API** - Well-structured endpoints
+- **📁 File Upload** - Multi-format media support
+- **📧 Email Notifications** - Status update alerts
+- **📈 Analytics** - Comprehensive reporting
+- **🔍 Full-text Search** - Advanced filtering capabilities
+- **🛡️ Security** - CORS, validation, and error handling
 
-2. Start the app
+## 🏗️ Architecture
 
-   ```bash
-   npx expo start
-   ```
+### MVC Structure
+```
+Frontend (React Native/Expo)
+├── app/                    # Screens and navigation
+├── components/             # Reusable UI components
+└── utils/                  # API services and utilities
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+Backend (Node.js/Express)
+├── models/                 # MongoDB schemas (User, Complaint)
+├── views/                  # API responses (JSON)
+├── controllers/            # Business logic
+├── routes/                 # API endpoints
+├── middleware/             # Authentication, validation
+└── services/               # External services (email, etc.)
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Database Models
+- **Complaint Model**: Issue tracking with status, priority, location
+- **User Model**: Citizen profiles with authentication
+- **Department/Branch**: Authority management (extensible)
 
-## Learn more
+## 🚀 Quick Start
 
-To learn more about developing your project with Expo, look at the following resources:
+### Prerequisites
+- Node.js (v16+)
+- MongoDB Atlas account or local MongoDB
+- Expo CLI (`npm install -g @expo/cli`)
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### 1. Clone and Setup
+```bash
+git clone <repository-url>
+cd CivicSolve
 
-## Join the community
+# Install frontend dependencies
+npm install
 
-Join our community of developers creating universal apps.
+# Install backend dependencies
+cd backend
+npm install
+cd ..
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### 2. Backend Setup
+```bash
+cd backend
+
+# Configure environment
+cp env.example .env
+# Edit .env with your MongoDB URI and other settings
+
+# Start backend server
+npm run dev
+```
+
+### 3. Frontend Setup
+```bash
+# Start Expo development server
+npm start
+
+# Run on specific platforms
+npm run android  # Android
+npm run ios      # iOS
+npm run web      # Web
+```
+
+## 📱 Screens Overview
+
+### 1. **Home Screen** (`app/(tabs)/index.tsx`)
+- Interactive map with issue hotspots
+- Quick access to reporting
+- Statistics overview
+
+### 2. **Discover Screen** (`app/(tabs)/discover.tsx`)
+- Browse all reported issues
+- Advanced filtering and search
+- Category-based organization
+
+### 3. **Report Screen** (`app/(tabs)/report.tsx`)
+- Create new issue reports
+- Media attachment support
+- Location capture
+
+### 4. **My Issues Screen** (`app/(tabs)/my-issues.tsx`)
+- Personal issue tracking
+- Status updates
+- Progress monitoring
+
+### 5. **Profile Screen** (`app/(tabs)/profile.tsx`)
+- User profile management
+- Settings and preferences
+
+## 🔧 API Endpoints
+
+### Complaints
+- `GET /api/complaints` - List all complaints
+- `POST /api/complaints` - Create new complaint
+- `GET /api/complaints/:id` - Get complaint details
+- `PATCH /api/complaints/:id/status` - Update status
+- `POST /api/complaints/:id/upvote` - Support issue
+
+### Users
+- `POST /api/users/register` - User registration
+- `GET /api/users/profile` - Get user profile
+- `PATCH /api/users/profile` - Update profile
+- `GET /api/users/dashboard` - Dashboard data
+
+### File Upload
+- `POST /api/upload` - Single file upload
+- `POST /api/upload/multiple` - Multiple files
+- `DELETE /api/upload/:filename` - Delete file
+
+## 🗄️ Database Schema
+
+### Complaint Schema
+```javascript
+{
+  complaintId: String (unique),
+  title: String,
+  description: String,
+  location: String,
+  coordinates: { latitude: Number, longitude: Number },
+  status: ['reported', 'in_progress', 'resolved', 'closed'],
+  priority: ['high', 'medium', 'low'],
+  category: String,
+  reportedBy: ObjectId (ref: 'User'),
+  createdDate: Date,
+  media: [{ type: String, uri: String, name: String }],
+  upvotes: Number
+}
+```
+
+### User Schema
+```javascript
+{
+  name: String,
+  phone: String (unique),
+  citizenId: String (unique),
+  email: String (unique),
+  location: String,
+  gender: ['male', 'female', 'other'],
+  dob: Date
+}
+```
+
+## 🛠️ Development
+
+### Backend Development
+```bash
+cd backend
+npm run dev  # Development with auto-restart
+npm start    # Production mode
+```
+
+### Frontend Development
+```bash
+npm start    # Expo development server
+npm run android  # Android emulator
+npm run ios      # iOS simulator
+npm run web      # Web browser
+```
+
+### API Testing
+```bash
+# Health check
+curl http://localhost:3000/health
+
+# Get complaints
+curl http://localhost:3000/api/complaints
+
+# Get statistics
+curl http://localhost:3000/api/complaints/stats
+```
+
+## 📦 Dependencies
+
+### Frontend
+- **Expo** - React Native framework
+- **Expo Router** - File-based navigation
+- **React Native** - Mobile app framework
+- **Expo Location** - GPS services
+- **Expo Image Picker** - Camera/gallery access
+- **Expo AV** - Audio recording
+
+### Backend
+- **Express.js** - Web framework
+- **MongoDB** - Database
+- **Mongoose** - ODM for MongoDB
+- **JWT** - Authentication
+- **Multer** - File upload handling
+- **Nodemailer** - Email notifications
+
+## 🚀 Deployment
+
+### Backend Deployment
+1. Set up production MongoDB
+2. Configure environment variables
+3. Use PM2 for process management
+4. Set up reverse proxy (Nginx)
+
+### Frontend Deployment
+1. Build for production: `expo build`
+2. Deploy to app stores
+3. Deploy web version to hosting service
+
+## 📄 Documentation
+
+- [Complete Setup Guide](SETUP.md) - Detailed installation instructions
+- [Backend API Documentation](backend/README.md) - API reference
+- [Frontend Components](components/) - UI component documentation
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📝 License
+
+This project is licensed under the ISC License.
+
+## 🆘 Support
+
+For issues and questions:
+- Check the [Setup Guide](SETUP.md)
+- Review the troubleshooting section
+- Create an issue on GitHub
+
+---
+
+**Built with ❤️ for better civic engagement and community development.**

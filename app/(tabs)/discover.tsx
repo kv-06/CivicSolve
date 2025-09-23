@@ -18,7 +18,7 @@ import {
 } from "react-native";
 import { FloatingChatButton } from "../../components/FloatingChatButton";
 import IssueCard from "../../components/IssueCard";
-import { mockApi } from "../../utils/mockApi";
+import { apiService } from "../../utils/apiService";
 
 const CATEGORIES = [
   "All",
@@ -74,7 +74,7 @@ export default function DiscoverScreen() {
   const loadIssues = async () => {
     try {
       setLoading(true);
-      const response = await mockApi.getAllIssues(filters);
+      const response = await apiService.getAllIssues(filters);
 
       if (response.success) {
         setIssues(response.data);

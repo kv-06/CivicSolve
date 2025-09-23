@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { FloatingChatButton } from "../../components/FloatingChatButton";
 import IssueCard from "../../components/IssueCard";
-import { mockApi } from "../../utils/mockApi";
+import { apiService } from "../../utils/apiService";
 
 export default function MyIssuesScreen() {
   const [issues, setIssues] = useState([]);
@@ -36,7 +36,7 @@ export default function MyIssuesScreen() {
   const loadMyIssues = async () => {
     try {
       setLoading(true);
-      const response = await mockApi.getMyIssues();
+      const response = await apiService.getMyIssues();
 
       if (response.success) {
         setIssues(response.data);

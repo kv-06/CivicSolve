@@ -214,39 +214,47 @@ export default function ReportScreen() {
     setIsSubmitting(true);
 
     try {
-      // Here you would typically upload to your backend
       const issueData = {
         title: title.trim(),
         description: description.trim(),
         category,
-        location,
-        media,
-        timestamp: new Date().toISOString(),
-        status: "reported",
-        id: Date.now().toString(),
+        location: location?.address || "Location not specified",
+        coordinates: location?.coords || { latitude: 0, longitude: 0 },
+        media: media.map(item => ({
+          type: item.type,
+          uri: item.uri,
+          name: item.name
+        })),
+        priority: "medium"
       };
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Import API service dynamically to avoid circular imports
+      const { apiService } = await import("../../utils/apiService");
+      const response = await apiService.createComplaint(issueData);
 
-      Alert.alert(
-        "Success!",
-        "Your issue has been reported successfully. We will look into it soon.",
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              // Reset form
-              setTitle("");
-              setDescription("");
-              setCategory("");
-              setLocation(null);
-              setMedia([]);
+      if (response.success) {
+        Alert.alert(
+          "Success!",
+          "Your issue has been reported successfully. We will look into it soon.",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                // Reset form
+                setTitle("");
+                setDescription("");
+                setCategory("");
+                setLocation(null);
+                setMedia([]);
+              },
             },
-          },
-        ]
-      );
+          ]
+        );
+      } else {
+        Alert.alert("Error", response.message || "Failed to submit issue. Please try again.");
+      }
     } catch (error) {
+      console.error("Error submitting issue:", error);
       Alert.alert("Error", "Failed to submit issue. Please try again.");
     } finally {
       setIsSubmitting(false);
