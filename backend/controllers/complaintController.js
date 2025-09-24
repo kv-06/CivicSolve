@@ -1,6 +1,7 @@
 const Complaint = require('../models/Complaint');
 const User = require('../models/User');
 const mongoose = require('mongoose');
+const emailService = require('../services/emailService'); // Add email service
 
 // Check if database is connected
 const isDbConnected = () => {
@@ -238,6 +239,18 @@ const createComplaint = async (req, res) => {
     // Populate the created complaint
     await complaint.populate('reportedBy', 'name email');
 
+    // Send email confirmation after successful complaint creation
+    const user = await User.findById(finalUserId);
+    if (user && user.email) {
+      emailService.sendComplaintConfirmation(user, complaint)
+        .then(() => {
+          console.log(`Confirmation email sent to ${user.email} for complaint ${complaint._id}`);
+        })
+        .catch((error) => {
+          console.error(`Failed to send confirmation email to ${user.email}:`, error.message);
+        });
+    }
+
     res.status(201).json({
       success: true,
       message: 'Complaint created successfully',
@@ -259,6 +272,17 @@ const updateComplaintStatus = async (req, res) => {
     const { id } = req.params;
     const { status, workOrderNumber } = req.body;
 
+    // Get current complaint for status change email
+    const currentComplaint = await Complaint.findById(id).populate('reportedBy', 'name email');
+    if (!currentComplaint) {
+      return res.status(404).json({
+        success: false,
+        message: 'Complaint not found'
+      });
+    }
+
+    const oldStatus = currentComplaint.status;
+
     const updateData = { status };
     if (workOrderNumber) {
       updateData.workOrderNumber = workOrderNumber;
@@ -273,11 +297,15 @@ const updateComplaintStatus = async (req, res) => {
       { new: true, runValidators: true }
     ).populate('reportedBy', 'name email');
 
-    if (!complaint) {
-      return res.status(404).json({
-        success: false,
-        message: 'Complaint not found'
-      });
+    // Send status update email if status changed
+    if (oldStatus !== status && complaint.reportedBy && complaint.reportedBy.email) {
+      emailService.sendStatusUpdateEmail(complaint.reportedBy, complaint, oldStatus, status)
+        .then(() => {
+          console.log(`Status update email sent to ${complaint.reportedBy.email} for complaint ${complaint._id}`);
+        })
+        .catch((error) => {
+          console.error(`Failed to send status update email to ${complaint.reportedBy.email}:`, error.message);
+        });
     }
 
     res.json({
@@ -417,7 +445,7 @@ const getComplaintStats = async (req, res) => {
         overall: stats[0] || { total: 0, reported: 0, inProgress: 0, resolved: 0, closed: 0 },
         byCategory: categoryStats
       }
-    });
+    }); 
   } catch (error) {
     console.error('Error fetching complaint stats:', error);
     res.status(500).json({
