@@ -1,6 +1,6 @@
 // app/issue-detail.tsx
 import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -28,6 +28,8 @@ export default function IssueDetailScreen() {
   const [supporting, setSupporting] = useState(false);
   const [hasEscalated, setHasEscalated] = useState(false);
   const [hasSupported, setHasSupported] = useState(false);
+  const [hasReported, setHasReported] = useState(false);
+
 
   useEffect(() => {
     loadIssueDetails();
@@ -104,6 +106,7 @@ export default function IssueDetailScreen() {
 
       if (response.success) {
         Alert.alert("Success", response.message);
+        setHasReported(true);
       } else {
         Alert.alert("Error", response.error);
       }
@@ -131,30 +134,7 @@ export default function IssueDetailScreen() {
     }
   };
 
-  const handleSupport = async () => {
-    if (hasSupported) return;
-
-    try {
-      setSupporting(true);
-      const response = await mockApi.supportIssue(issueId);
-
-      if (response.success) {
-        setHasSupported(true);
-        setIssue((prev) => ({
-          ...prev,
-          supportCount: prev.supportCount + 1,
-        }));
-        Alert.alert("Thank You!", response.message);
-      } else {
-        Alert.alert("Error", response.error);
-      }
-    } catch (error) {
-      Alert.alert("Error", "Failed to support issue");
-    } finally {
-      setSupporting(false);
-    }
-  };
-
+ 
   const getStatusColor = (status) => {
     switch (status) {
       case "reported":
@@ -256,38 +236,9 @@ export default function IssueDetailScreen() {
   const renderActionButtons = () => {
     const isFromDiscover = fromDiscover === "true";
 
-    if (!isFromDiscover) {
-      // Actions for My Issues - only support
-      return (
-        <View style={styles.myIssuesActions}>
-          <TouchableOpacity
-            style={[
-              styles.actionButton,
-              styles.supportButton,
-              hasSupported && styles.supportedButton,
-            ]}
-            onPress={handleSupport}
-            disabled={supporting || hasSupported}
-          >
-            <Ionicons
-              name={hasSupported ? "heart" : "heart-outline"}
-              size={20}
-              color={hasSupported ? "#fff" : "#e74c3c"}
-            />
-            <Text
-              style={[
-                styles.actionButtonText,
-                hasSupported && styles.supportedButtonText,
-              ]}
-            >
-              {hasSupported ? "Supported" : "Support"} ({issue.supportCount})
-            </Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
+    if (isFromDiscover) {
+      
 
-    // Actions for Discover page - escalate, report, share
     return (
       <View style={styles.discoverActions}>
         <TouchableOpacity
@@ -319,16 +270,28 @@ export default function IssueDetailScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.actionButton, styles.reportButton]}
-          onPress={handleReport}
-          disabled={reporting}
-        >
-          <Ionicons name="flag" size={20} color="#e67e22" />
-          <Text style={styles.actionButtonText}>
-            {reporting ? "Reporting..." : "Report"}
-          </Text>
-        </TouchableOpacity>
-
+            style={[
+              styles.actionButton,
+              styles.reportButton,
+              hasReported && styles.reportedButton, // Apply reported style
+            ]}
+            onPress={handleReport}
+            disabled={reporting || hasReported}
+          >
+            <Ionicons
+              name="alert-circle"
+              size={20}
+              color={hasReported ? "#fff" : "#e67e22"}
+            />
+            <Text
+              style={[
+                styles.actionButtonText,
+                hasReported && styles.reportedButtonText, // Change text color
+              ]}
+            >
+              {reporting ? "Reporting..." : hasReported ? "Reported" : "Report"}
+            </Text>
+          </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, styles.shareButton]}
           onPress={handleShare}
@@ -338,6 +301,8 @@ export default function IssueDetailScreen() {
         </TouchableOpacity>
       </View>
     );
+
+  }
   };
 
   if (loading) {
@@ -367,17 +332,11 @@ export default function IssueDetailScreen() {
   }
 
   return (
+    <>
+      <Stack.Screen options={{ title: "Issue Details" }} />
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backIcon} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Issue Details</Text>
-        <View style={styles.headerRight} />
-      </View>
 
       <ScrollView
         style={styles.scrollView}
@@ -458,10 +417,6 @@ export default function IssueDetailScreen() {
           {/* Stats */}
           <View style={styles.statsSection}>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{issue.supportCount || 0}</Text>
-              <Text style={styles.statLabel}>Supporters</Text>
-            </View>
-            <View style={styles.statItem}>
               <Text style={styles.statNumber}>
                 {issue.escalationCount || 0}
               </Text>
@@ -478,6 +433,7 @@ export default function IssueDetailScreen() {
       {/* Action Buttons */}
       {renderActionButtons()}
     </SafeAreaView>
+    </>
   );
 }
 
@@ -737,6 +693,12 @@ const styles = StyleSheet.create({
     borderColor: "#e67e22",
     backgroundColor: "#fff",
     flex: 0.32,
+  },
+  reportedButton: {
+    backgroundColor: "#e67e22",
+  },
+  reportedButtonText: {
+    color: "#fff",
   },
   shareButton: {
     borderColor: "#27ae60",
