@@ -1,6 +1,7 @@
 const Complaint = require('../models/Complaint');
 const User = require('../models/User');
 const mongoose = require('mongoose');
+const geminiService = require('../services/geminiService');
 
 // Check if database is connected
 const isDbConnected = () => {
@@ -197,6 +198,13 @@ const createComplaint = async (req, res) => {
         ? `Lat: ${coordinates.latitude}, Lng: ${coordinates.longitude}`
         : 'Location not specified';
 
+    // Classify complaint using Gemini AI
+    console.log('Classifying complaint with Gemini AI...');
+    const department = await geminiService.classifyComplaint(description, title, category);
+    const departmentId = geminiService.getDepartmentId(department);
+    
+    console.log(`Complaint classified as: ${department} (ID: ${departmentId})`);
+
     // Get user ID from request (assuming authentication middleware sets req.user)
     const userId = req.user?.id;
     
@@ -229,6 +237,8 @@ const createComplaint = async (req, res) => {
       coordinates,
       priority,
       media,
+      department: departmentId,
+      branch: departmentId, // Same value as department
       reportedBy: finalUserId
     };
 
