@@ -277,7 +277,7 @@ export default function ReportScreen() {
         <View style={styles.form}>
           {/* Title Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Issue Title *</Text>
+            <Text style={styles.label}>Issue Title </Text>
             <TextInput
               style={styles.input}
               placeholder="Enter a brief title for your issue"
@@ -289,7 +289,7 @@ export default function ReportScreen() {
 
           {/* Category Selection */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Category *</Text>
+            <Text style={styles.label}>Category </Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -319,7 +319,7 @@ export default function ReportScreen() {
 
           {/* Description Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Description *</Text>
+            <Text style={styles.label}>Description </Text>
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Describe the issue in detail..."
