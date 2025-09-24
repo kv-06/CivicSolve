@@ -1,9 +1,23 @@
 const Complaint = require('../models/Complaint');
 const User = require('../models/User');
+const mongoose = require('mongoose');
+
+// Check if database is connected
+const isDbConnected = () => {
+  return mongoose.connection.readyState === 1;
+};
 
 // Get all complaints with filtering and pagination
 const getAllComplaints = async (req, res) => {
   try {
+    // Check if database is connected
+    if (!isDbConnected()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection not available. Please check MongoDB Atlas IP whitelist settings.',
+        data: []
+      });
+    }
     const {
       search = '',
       category = 'All',
@@ -139,6 +153,13 @@ const getComplaintById = async (req, res) => {
 // Create new complaint
 const createComplaint = async (req, res) => {
   try {
+    // Check if database is connected
+    if (!isDbConnected()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection not available. Please check MongoDB Atlas IP whitelist settings.'
+      });
+    }
     const {
       title,
       description,
@@ -149,13 +170,32 @@ const createComplaint = async (req, res) => {
       media = []
     } = req.body;
 
+    // Debug logging
+    console.log('Received complaint data:', {
+      title,
+      description,
+      category,
+      location,
+      coordinates,
+      priority,
+      media
+    });
+
     // Validate required fields
-    if (!title || !description || !category || !location) {
+    if (!title || !description || !category) {
+      console.log('Validation failed:', { title: !!title, description: !!description, category: !!category });
       return res.status(400).json({
         success: false,
-        message: 'Title, description, category, and location are required'
+        message: 'Title, description, and category are required'
       });
     }
+
+    // Use coordinates if location is not specified
+    const finalLocation = location && location !== 'Location not specified' 
+      ? location 
+      : coordinates 
+        ? `Lat: ${coordinates.latitude}, Lng: ${coordinates.longitude}`
+        : 'Location not specified';
 
     // Get user ID from request (assuming authentication middleware sets req.user)
     const userId = req.user?.id;
@@ -185,7 +225,7 @@ const createComplaint = async (req, res) => {
       title,
       description,
       category,
-      location,
+      location: finalLocation,
       coordinates,
       priority,
       media,

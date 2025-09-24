@@ -1,8 +1,9 @@
 // utils/apiService.js
 // API service for backend communication
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_BASE_URL = 'http://localhost:3000/api';
-const USE_MOCK_API = true; // Set to false to use real API
+const USE_MOCK_API = false; // Set to false to use real API
 
 // Mock data for issues
 const MOCK_ISSUES = [
@@ -165,18 +166,34 @@ const makeApiCall = async (endpoint, options = {}) => {
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
         ...options.headers,
       },
+      mode: 'cors', // Explicitly set CORS mode
+      credentials: 'include', // Include credentials for CORS
       ...options,
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
 
     return await response.json();
   } catch (error) {
-    console.error('API call failed:', error);
+    console.error('API call failed:', {
+      endpoint,
+      error: error.message,
+      url: `${API_BASE_URL}${endpoint}`
+    });
+    
+    // Handle CORS errors specifically
+    if (error.message.includes('CORS') || error.message.includes('cors')) {
+      throw new Error('CORS Error: Unable to connect to backend server. Please check if the server is running and CORS is configured properly.');
+    }
+    
     throw error;
   }
 };
@@ -391,9 +408,6 @@ const realApi = {
   getMyIssues: async (filters = {}) => {
     return await makeApiCall('/complaints/my-complaints', {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-      },
     });
   },
 
@@ -416,29 +430,28 @@ const realApi = {
   createComplaint: async (complaintData) => {
     return await makeApiCall('/complaints', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-      },
       body: JSON.stringify(complaintData),
     });
   },
 
   // Escalate an issue
   escalateIssue: async (issueId) => {
+    const token = await AsyncStorage.getItem('authToken');
     return await makeApiCall(`/complaints/${issueId}/escalate`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
   },
 
   // Report an issue as spam/inappropriate
   reportIssue: async (issueId, reason) => {
+    const token = await AsyncStorage.getItem('authToken');
     return await makeApiCall(`/complaints/${issueId}/report`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({ reason }),
     });
@@ -446,10 +459,11 @@ const realApi = {
 
   // Support/upvote an issue
   supportIssue: async (issueId) => {
+    const token = await AsyncStorage.getItem('authToken');
     return await makeApiCall(`/complaints/${issueId}/upvote`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
   },
@@ -471,20 +485,22 @@ const realApi = {
 
   // Get user profile
   getUserProfile: async () => {
+    const token = await AsyncStorage.getItem('authToken');
     return await makeApiCall('/users/profile', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
   },
 
   // Update user profile
   updateUserProfile: async (profileData) => {
+    const token = await AsyncStorage.getItem('authToken');
     return await makeApiCall('/users/profile', {
       method: 'PATCH',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(profileData),
     });
@@ -492,10 +508,11 @@ const realApi = {
 
   // Get user dashboard
   getUserDashboard: async () => {
+    const token = await AsyncStorage.getItem('authToken');
     return await makeApiCall('/users/dashboard', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
   },
@@ -506,3 +523,4 @@ export const apiService = USE_MOCK_API ? mockApi : realApi;
 
 // Export both for flexibility
 export { mockApi, realApi };
+

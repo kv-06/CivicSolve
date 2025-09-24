@@ -26,7 +26,9 @@ const connectDB = async () => {
 
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);
-    process.exit(1);
+    console.log('Server will continue running without database connection');
+    console.log('Please check your MongoDB Atlas IP whitelist settings');
+    // Don't exit the process, let the server continue running
   }
 };
 
